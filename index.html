@@ -1,37 +1,304 @@
-Bilkul! 😊 Ab hum aapki Smart Seller website ko ek proper e-commerce management system banayenge.
 
-Sabse pehle Products section mein ye 3 features add karenge:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Seller</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f3f5fa;color:#202b40}
+button,input,textarea,select{padding:11px;border:1px solid #ddd;border-radius:7px;font:inherit}
+button{cursor:pointer;background:#5267ed;color:white;border:0}
+button:hover{opacity:.9}
+.hidden{display:none!important}
+#login{max-width:410px;margin:65px auto;background:white;padding:25px;border-radius:14px;box-shadow:0 5px 25px #ddd}
+#login input{width:100%;margin:8px 0}
+h1,h2{margin-top:0}
+.brand{font-size:27px;font-weight:bold;color:#17233b}
+.brand span{color:#18a981}
+.tabs{display:flex;gap:8px;margin:20px 0}
+.tabs button{flex:1}
+.secondary{background:#e9edff;color:#4054d6}
+.danger{background:#dc4545}
+.layout{display:flex;min-height:100vh}
+aside{width:220px;background:#17233b;color:white;padding:20px;flex-shrink:0}
+aside button{display:block;width:100%;text-align:left;margin:7px 0;background:#283b59}
+main{flex:1;padding:25px;min-width:0}
+header{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.card{background:white;padding:18px;border-radius:12px;margin:12px 0;box-shadow:0 2px 12px #ddd}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stats .card{margin:0}
+input,textarea,select{max-width:100%}
+table{width:100%;border-collapse:collapse;background:white}
+th,td{padding:12px;border-bottom:1px solid #eee;text-align:left}
+.wrap{overflow-x:auto}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:15px}
+.product img{width:100%;height:130px;object-fit:cover;background:#eee;border-radius:8px}
+.product{background:white;padding:13px;border-radius:12px}
+.product h3{margin-bottom:5px}
+.page{display:none}.page.active{display:block}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form input,.form textarea,.form select{width:100%}
+.form textarea{grid-column:1/-1}
+.modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:15px}
+.modal.show{display:flex}
+.modal>div{background:white;padding:22px;border-radius:12px;width:100%;max-width:500px;max-height:90vh;overflow:auto}
+small{color:#777}
+@media(max-width:700px){
+.layout{display:block}aside{width:100%;padding:10px}
+aside button{display:inline-block;width:auto}
+main{padding:13px}.stats{grid-template-columns:1fr 1fr}
+.form{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
 
-1. Add Product – Product name, price, image, category aur stock.
-2. Edit Product – Pehle se added product ki details change karna.
-3. Delete Product – Product remove karna.
+<div id="login">
+ <div class="brand">Smart <span>Seller.</span></div>
+ <div class="tabs">
+  <button onclick="mode='admin';showLogin()">Admin</button>
+  <button class="secondary" onclick="mode='customer';showLogin()">Customer</button>
+ </div>
+ <form id="loginForm">
+  <h2 id="loginTitle">Admin Login</h2>
+  <div id="nameBox" class="hidden">
+   <input id="fullName" placeholder="Full name">
+  </div>
+  <input id="email" type="email" placeholder="Email address" required>
+  <input id="password" type="password" placeholder="Password" required>
+  <button style="width:100%" id="loginButton">Login</button>
+  <p id="toggleRegister" onclick="registerMode=!registerMode;showLogin()" style="color:#5267ed;cursor:pointer">Create customer account</p>
+  <p id="error" style="color:red"></p>
+  <small id="hint">Demo admin: admin@smartseller.com / Admin123!</small>
+ </form>
+</div>
 
-Saath hi products browser mein save rahenge, taake page refresh karne par bhi data gayab na ho. Baad mein permanent online database connect karenge.
+<div id="app" class="hidden">
+<div class="layout">
+<aside>
+ <div class="brand" style="color:white">Smart <span>Seller.</span></div>
+ <div id="adminMenu">
+  <button onclick="page('dashboard')">Dashboard</button>
+  <button onclick="page('products')">Products</button>
+  <button onclick="page('orders')">Orders</button>
+  <button onclick="page('customers')">Customers</button>
+  <button onclick="page('support')">Customer Service</button>
+  <button onclick="page('settings')">Settings</button>
+ </div>
+ <div id="customerMenu" class="hidden">
+  <button onclick="page('shop')">Shop Products</button>
+  <button onclick="page('cart')">Shopping Cart</button>
+  <button onclick="page('myorders')">My Orders</button>
+  <button onclick="page('mysupport')">Customer Support</button>
+ </div>
+ <button onclick="logout()" style="background:#dc4545;margin-top:20px">Logout</button>
+</aside>
 
-Maine aapke existing dashboard ke design ko maintain karte hue updated file bana di hai.
+<main>
+<header><h1 id="heading">Dashboard</h1><span id="who"></span></header>
 
-Updated Smart Seller — index.html
+<section id="dashboard" class="page active">
+ <div class="stats">
+  <div class="card">Products<h2 id="statProducts">0</h2></div>
+  <div class="card">Orders<h2 id="statOrders">0</h2></div>
+  <div class="card">Customers<h2 id="statCustomers">0</h2></div>
+  <div class="card">Sales<h2 id="statSales">$0</h2></div>
+ </div>
+ <div class="card"><h2>Welcome to Smart Seller</h2>Manage your online store here.</div>
+</section>
 
-Products management with Add, Edit, Delete and Search
+<section id="products" class="page">
+ <div class="card">
+  <button onclick="productModal()">+ Add Product</button>
+  <input id="productSearch" placeholder="Search products" oninput="renderProducts()">
+  <div class="wrap"><table><thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead><tbody id="productRows"></tbody></table></div>
+ </div>
+</section>
 
-Ready
+<section id="shop" class="page">
+ <div class="card"><input id="shopSearch" placeholder="Search products" oninput="renderShop()"><div id="shopProducts" class="product-grid"></div></div>
+</section>
 
-Download Updated Website File
+<section id="cart" class="page">
+ <div class="card"><h2>Shopping Cart</h2><div id="cartItems"></div><h3 id="cartTotal">Total: $0</h3><button onclick="checkout()">Place Order</button></div>
+</section>
 
-### Ab GitHub par upload kaise karna hai?
+<section id="orders" class="page">
+ <div class="card"><h2>All Orders</h2><div class="wrap"><table><thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody id="orderRows"></tbody></table></div></div>
+</section>
 
-1. Updated file download karein.
-2. GitHub par apni `digital-ship` repository kholein.
-3. `index.html` par click karein.
-4. Pencil (Edit) icon dabayein.
-5. Keyboard se `Ctrl + A` dabayein.
-6. Purana code remove karke downloaded file ka complete code paste karein.
-7. Commit changes dabayein.
+<section id="myorders" class="page">
+ <div class="card"><h2>My Orders</h2><div id="myOrderRows"></div></div>
+</section>
 
-[GitHub Pagesでのポートフォリオ（静的サイト）公開 #初心者 - Qiita](https://images.openai.com/static-rsc-4/_oIo_eQGHocIiY1eIqtqXhlMGYBOxO1fQI_JKT5uukZziXuGZe6-ExVq7klc_BodsY8dDRCb86cvbZjf2I2vvaLXj5fcaOlDFgSKWdskLf0djREA4tK9hDUCvWE4Q_nihtNuPpWRehgHgrNU8xUB7tPMM2rhDTPVyhpTeKXuzVM?purpose=inline)
+<section id="customers" class="page">
+ <div class="card"><h2>Registered Customers</h2><div id="customerRows"></div></div>
+</section>
 
-[qiita.com](https://qiita.com/yskmkn/items/5a90c2aef8f525d9f561?utm_source=chatgpt.com)
+<section id="support" class="page">
+ <div class="card"><h2>Customer Service Inbox</h2><div id="supportRows"></div></div>
+</section>
 
-Important: Is version mein products isi browser mein save honge. Shared online database hum agle phase mein connect karenge.
+<section id="mysupport" class="page">
+ <div class="card">
+  <h2>Contact Customer Service</h2>
+  <input id="ticketSubject" placeholder="Subject" style="width:100%;margin:7px 0">
+  <textarea id="ticketMessage" placeholder="Write your question or complaint" style="width:100%;height:100px"></textarea>
+  <button onclick="sendTicket()">Send Message</button>
+  <h3>My support requests</h3><div id="myTickets"></div>
+ </div>
+</section>
 
-Jab aap code paste kar lein, mujhe screenshot bhej dein. Main agla step guide karunga.
+<section id="settings" class="page">
+ <div class="card">
+  <h2>Store Settings</h2>
+  <input id="storeName" placeholder="Store name">
+  <button onclick="saveSettings()">Save Settings</button>
+  <hr>
+  <h3>Change Admin Password</h3>
+  <input id="newPass" type="password" placeholder="New password">
+  <button onclick="changePass()">Update Password</button>
+ </div>
+</section>
+</main>
+</div>
+</div>
+
+<div class="modal" id="modal">
+<div>
+<h2 id="modalTitle">Add Product</h2>
+<form id="productForm">
+ <input id="pName" placeholder="Product name" required style="width:100%;margin:5px">
+ <input id="pCategory" placeholder="Category" required style="width:100%;margin:5px">
+ <input id="pPrice" type="number" min="0" step=".01" placeholder="Price" required style="width:100%;margin:5px">
+ <input id="pStock" type="number" min="0" placeholder="Stock" required style="width:100%;margin:5px">
+ <input id="pImage" placeholder="Image URL (optional)" style="width:100%;margin:5px">
+ <button>Save Product</button>
+ <button type="button" class="danger" onclick="closeModal()">Cancel</button>
+</form>
+</div>
+</div>
+
+<script>
+const KEY="smartSellerDatabase";
+let db=JSON.parse(localStorage.getItem(KEY)||'{"products":[],"orders":[],"customers":[],"tickets":[],"settings":{"name":"Smart Seller"}}');
+let mode="admin",registerMode=false,user=null,editId=null,cart=[];
+let adminPassword=localStorage.getItem("ssAdminPassword")||"Admin123!";
+
+function save(){localStorage.setItem(KEY,JSON.stringify(db))}
+function showLogin(){
+ document.getElementById("loginTitle").textContent=mode==="admin"?"Admin Login":registerMode?"Create Customer Account":"Customer Login";
+ document.getElementById("nameBox").classList.toggle("hidden",mode!=="customer"||!registerMode);
+ document.getElementById("loginButton").textContent=registerMode?"Register":"Login";
+ document.getElementById("toggleRegister").classList.toggle("hidden",mode==="admin");
+ document.getElementById("toggleRegister").textContent=registerMode?"Already registered? Login":"Create customer account";
+ document.getElementById("hint").textContent=mode==="admin"?"Demo: admin@smartseller.com / Admin123!":"Customer account required";
+ document.getElementById("error").textContent="";
+}
+function enter(u){
+ user=u;
+ document.getElementById("login").classList.add("hidden");
+ document.getElementById("app").classList.remove("hidden");
+ const admin=u.role==="admin";
+ document.getElementById("adminMenu").classList.toggle("hidden",!admin);
+ document.getElementById("customerMenu").classList.toggle("hidden",admin);
+ document.getElementById("who").textContent=u.name;
+ page(admin?"dashboard":"shop");
+}
+document.getElementById("loginForm").onsubmit=e=>{
+ e.preventDefault();
+ let email=document.getElementById("email").value.trim().toLowerCase();
+ let pass=document.getElementById("password").value;
+ if(mode==="admin"){
+  if(email==="admin@smartseller.com"&&pass===adminPassword){enter({name:"Admin",email,role:"admin"})}
+  else document.getElementById("error").textContent="Incorrect admin login";
+ }else if(registerMode){
+  let name=document.getElementById("fullName").value.trim();
+  if(name.length<2||pass.length<8){document.getElementById("error").textContent="Enter your name and a password of at least 8 characters";return}
+  if(db.customers.some(c=>c.email===email)){document.getElementById("error").textContent="Email already registered";return}
+  let c={id:Date.now(),name,email,password:pass};
+  db.customers.push(c);save();enter({...c,role:"customer"});
+ }else{
+  let c=db.customers.find(c=>c.email===email&&c.password===pass);
+  if(c)enter({...c,role:"customer"});
+  else document.getElementById("error").textContent="Account not found or password incorrect";
+ }
+};
+function logout(){user=null;cart=[];document.getElementById("app").classList.add("hidden");document.getElementById("login").classList.remove("hidden");document.getElementById("password").value=""}
+function page(id){
+ document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.getElementById("heading").textContent=id.charAt(0).toUpperCase()+id.slice(1);
+ refresh();
+}
+function refresh(){
+ renderProducts();renderShop();renderOrders();renderCustomers();renderSupport();renderCart();renderMyOrders();renderMyTickets();
+ document.getElementById("statProducts").textContent=db.products.length;
+ document.getElementById("statOrders").textContent=db.orders.length;
+ document.getElementById("statCustomers").textContent=db.customers.length;
+ document.getElementById("statSales").textContent="$"+db.orders.filter(o=>o.status==="Completed").reduce((a,o)=>a+o.amount,0).toFixed(2);
+}
+function productModal(p=null){
+ editId=p?.id||null;
+ document.getElementById("modalTitle").textContent=p?"Edit Product":"Add Product";
+ ["Name","Category","Price","Stock","Image"].forEach((x,i)=>document.getElementById("p"+x).value=p?[p.name,p.category,p.price,p.stock,p.image||""][i]:"");
+ document.getElementById("modal").classList.add("show");
+}
+function closeModal(){document.getElementById("modal").classList.remove("show")}
+document.getElementById("productForm").onsubmit=e=>{
+ e.preventDefault();
+ let p={id:editId||Date.now(),name:pName.value.trim(),category:pCategory.value.trim(),price:Number(pPrice.value),stock:Number(pStock.value),image:pImage.value.trim()};
+ if(editId)db.products=db.products.map(x=>x.id===editId?p:x);else db.products.unshift(p);
+ save();closeModal();refresh();
+};
+function renderProducts(){
+ let q=(document.getElementById("productSearch")?.value||"").toLowerCase();
+ document.getElementById("productRows").innerHTML=db.products.filter(p=>(p.name+" "+p.category).toLowerCase().includes(q)).map(p=>`<tr><td>${safe(p.name)}</td><td>${safe(p.category)}</td><td>$${p.price}</td><td>${p.stock}</td><td><button onclick="productModal(db.products.find(x=>x.id===${p.id}))">Edit</button> <button class="danger" onclick="deleteProduct(${p.id})">Delete</button></td></tr>`).join("");
+}
+function deleteProduct(id){if(confirm("Delete this product?")){db.products=db.products.filter(p=>p.id!==id);save();refresh()}}
+function renderShop(){
+ let q=(document.getElementById("shopSearch")?.value||"").toLowerCase();
+ document.getElementById("shopProducts").innerHTML=db.products.filter(p=>p.name.toLowerCase().includes(q)).map(p=>`<div class="product">${p.image?`<img src="${safe(p.image)}">`:"<div style='height:130px;background:#eee'></div>"}<h3>${safe(p.name)}</h3><p>$${p.price} · Stock ${p.stock}</p><button onclick="addCart(${p.id})" ${p.stock<1?"disabled":""}>Add to Cart</button></div>`).join("")||"No products available";
+}
+function addCart(id){let p=db.products.find(x=>x.id===id);if(!p||p.stock<1)return alert("Out of stock");cart.push(id);renderCart();alert("Added to cart")}
+function renderCart(){
+ let items=cart.map(id=>db.products.find(p=>p.id===id)).filter(Boolean);
+ document.getElementById("cartItems").innerHTML=items.map((p,i)=>`<p>${safe(p.name)} — $${p.price} <button class="danger" onclick="removeCart(${i})">Remove</button></p>`).join("")||"Your cart is empty";
+ document.getElementById("cartTotal").textContent="Total: $"+items.reduce((a,p)=>a+p.price,0).toFixed(2);
+}
+function removeCart(i){cart.splice(i,1);renderCart()}
+function checkout(){
+ if(!cart.length)return alert("Your cart is empty");
+ let items=cart.map(id=>db.products.find(p=>p.id===id)).filter(Boolean);
+ if(items.some(p=>p.stock<1))return alert("A product is out of stock");
+ items.forEach(p=>p.stock--);
+ db.orders.unshift({id:"ORD-"+Date.now(),customer:user.name,email:user.email,items:items.map(p=>p.name),amount:items.reduce((a,p)=>a+p.price,0),status:"Pending",date:new Date().toLocaleDateString()});
+ cart=[];save();refresh();alert("Order request submitted!");
+}
+function renderOrders(){
+ document.getElementById("orderRows").innerHTML=db.orders.map(o=>`<tr><td>${safe(o.id)}</td><td>${safe(o.customer)}</td><td>$${o.amount.toFixed(2)}</td><td>${safe(o.status)}</td><td><select onchange="changeOrder('${o.id}',this.value)">${["Pending","Processing","Paid","Completed","Cancelled"].map(s=>`<option ${s===o.status?"selected":""}>${s}</option>`)}</select></td></tr>`).join("");
+}
+function changeOrder(id,status){let o=db.orders.find(x=>x.id===id);if(o){o.status=status;save();refresh()}}
+function renderMyOrders(){let el=document.getElementById("myOrderRows");if(el)el.innerHTML=db.orders.filter(o=>o.email===user?.email).map(o=>`<p>${safe(o.id)} — $${o.amount} — ${safe(o.status)}</p>`).join("")||"No orders yet"}
+function renderCustomers(){document.getElementById("customerRows").innerHTML=db.customers.map(c=>`<p>${safe(c.name)} — ${safe(c.email)}</p>`).join("")||"No customers"}
+function sendTicket(){
+ let subject=document.getElementById("ticketSubject").value.trim(),message=document.getElementById("ticketMessage").value.trim();
+ if(!subject||!message)return alert("Fill in subject and message");
+ db.tickets.unshift({id:Date.now(),name:user.name,email:user.email,subject,message,reply:"",status:"Open"});
+ save();document.getElementById("ticketSubject").value="";document.getElementById("ticketMessage").value="";refresh();alert("Support request sent");
+}
+function renderSupport(){
+ document.getElementById("supportRows").innerHTML=db.tickets.map(t=>`<div class="card"><b>${safe(t.subject)}</b><p>${safe(t.name)} (${safe(t.email)})</p><p>${safe(t.message)}</p><p>Status: ${safe(t.status)}</p><textarea id="reply${t.id}" placeholder="Write reply">${safe(t.reply)}</textarea><button onclick="replyTicket(${t.id})">Save Reply</button><button class="secondary" onclick="resolveTicket(${t.id})">Resolve</button></div>`).join("")||"No support requests";
+}
+function replyTicket(id){let t=db.tickets.find(x=>x.id===id);t.reply=document.getElementById("reply"+id).value;save();alert("Reply saved")}
+function resolveTicket(id){let t=db.tickets.find(x=>x.id===id);t.status="Resolved";save();refresh()}
+function renderMyTickets(){let el=document.getElementById("myTickets");if(el)el.innerHTML=db.tickets.filter(t=>t.email===user?.email).map(t=>`<div class="card"><b>${safe(t.subject)}</b><p>${safe(t.message)}</p><p>Status: ${safe(t.status)}</p><p>Admin reply: ${safe(t.reply||"Waiting for reply")}</p></div>`).join("")||"No support requests"}
+function saveSettings(){db.settings.name=document.getElementById("storeName").value;save();alert("Settings saved")}
+function changePass(){let p=document.getElementById("newPass").value;if(p.length<8)return alert("Use at least 8 characters");adminPassword=p;localStorage.setItem("ssAdminPassword",p);alert("Password changed")}
+function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+refresh();
+</script>
+</body>
+</html>
