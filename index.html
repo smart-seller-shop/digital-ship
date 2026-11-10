@@ -108,12 +108,15 @@ const initial={
  withdrawals:[],kyc:[],tickets:[],
  email:"admin@smartseller.com",password:"Admin123!"
 };
+
 let db=JSON.parse(localStorage.getItem(DB)||"null")||initial;
 let page="dashboard";
+
 function save(){localStorage.setItem(DB,JSON.stringify(db))}
 function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function cash(n){return "$"+Number(n||0).toFixed(2)}
+
 function openModal(title,html){
  document.getElementById("modalTitle").textContent=title;
  document.getElementById("modalBody").innerHTML=html;
@@ -128,16 +131,20 @@ document.getElementById("loginForm").onsubmit=e=>{
   sessionStorage.setItem(AUTH,"yes");showApp();
  }else loginError.textContent="Incorrect email or password";
 };
+
 document.getElementById("logout").onclick=()=>{
  sessionStorage.removeItem(AUTH);location.reload();
 };
+
 function showApp(){
  login.classList.add("hidden");app.classList.remove("hidden");render("dashboard");
 }
+
 document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
  document.querySelectorAll("[data-page]").forEach(x=>x.classList.remove("active"));
  b.classList.add("active");render(b.dataset.page);
 });
+
 function render(p){
  page=p;heading.textContent=p[0].toUpperCase()+p.slice(1);
  let html="";
@@ -152,6 +159,7 @@ function render(p){
  if(p==="settings")html=settings();
  content.innerHTML=html;
 }
+
 function dashboard(){
  let completed=db.orders.filter(o=>o.status==="Sent").length;
  let total=db.transactions.filter(t=>t.type==="Credit").reduce((s,t)=>s+t.amount,0);
@@ -169,32 +177,91 @@ function dashboard(){
  <button onclick="render('withdrawals')">Withdrawals</button>
  </div>`;
 }
+
+/* PRODUCTS SECTION */
 function products(){
  return `<div class="panel"><button onclick="productForm()">+ Add Product</button>
- <h3>Products</h3>${db.products.length?table(["Name","Price","Stock","Action"],db.products.map(p=>[
+ <h3>Products</h3>
+ ${db.products.length?table(["Image","Name","Price","Stock","Action"],db.products.map(p=>[
+ p.image?`<img src="${esc(p.image)}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:6px" onerror="this.style.display='none'">`:"—",
  esc(p.name),cash(p.price),p.stock,
- `<div class="actions"><button onclick="productForm('${p.id}')">Edit</button><button class="red" onclick="removeProduct('${p.id}')">Delete</button></div>`
- ])):'<div class="empty">No products added.</div>'}</div>`;
+ `<div class="actions">
+ <button onclick="productForm('${p.id}')">Edit</button>
+ <button class="red" onclick="removeProduct('${p.id}')">Delete</button>
+ </div>`
+ ])):'<div class="empty">No products added. Click “+ Add Product” to add your first product.</div>'}
+ </div>`;
 }
+
 function productForm(pid){
  let p=db.products.find(x=>x.id===pid)||{};
+
  openModal(pid?"Edit Product":"Add Product",`
  <form id="pf">
- <label>Product name</label><input name="name" required value="${esc(p.name)}">
- <div class="row"><div><label>Price</label><input name="price" type="number" min="0" step=".01" required value="${p.price??""}"></div>
- <div><label>Stock</label><input name="stock" type="number" min="0" required value="${p.stock??0}"></div></div>
- <label>Description</label><textarea name="description">${esc(p.description)}</textarea>
- <button style="width:100%">Save Product</button></form>`);
- pf.onsubmit=e=>{
-  e.preventDefault();let f=new FormData(pf);
-  let item={id:pid||id(),name:f.get("name"),price:+f.get("price"),stock:+f.get("stock"),description:f.get("description")};
-  if(pid)db.products=db.products.map(x=>x.id===pid?item:x);else db.products.push(item);
-  save();closeModal();render("products");
+ <label>Product name</label>
+ <input name="name" required maxlength="100" value="${esc(p.name)}" placeholder="Enter product name">
+
+ <div class="row">
+ <div>
+ <label>Price ($)</label>
+ <input name="price" type="number" min="0" step=".01" required value="${p.price??""}" placeholder="0.00">
+ </div>
+ <div>
+ <label>Stock / Quantity</label>
+ <input name="stock" type="number" min="0" step="1" required value="${p.stock??0}" placeholder="0">
+ </div>
+ </div>
+
+ <label>Product image URL (optional)</label>
+ <input name="image" type="url" value="${esc(p.image)}" placeholder="https://example.com/product.jpg">
+
+ <label>Description</label>
+ <textarea name="description" placeholder="Write product details">${esc(p.description)}</textarea>
+
+ <button type="submit" style="width:100%">Save Product</button>
+ </form>`);
+
+ const form=document.getElementById("pf");
+
+ form.onsubmit=e=>{
+  e.preventDefault();
+
+  const f=new FormData(form);
+  const name=String(f.get("name")||"").trim();
+  const price=Number(f.get("price"));
+  const stock=Number(f.get("stock"));
+
+  if(!name||!Number.isFinite(price)||price<0||!Number.isInteger(stock)||stock<0){
+   alert("Please enter a product name, a valid price, and a whole-number stock quantity.");
+   return;
+  }
+
+  const item={
+   id:pid||id(),
+   name:name,
+   price:price,
+   stock:stock,
+   image:String(f.get("image")||"").trim(),
+   description:String(f.get("description")||"").trim()
+  };
+
+  if(pid)db.products=db.products.map(x=>x.id===pid?item:x);
+  else db.products.push(item);
+
+  save();
+  closeModal();
+  render("products");
  };
 }
+
 function removeProduct(pid){
- if(confirm("Delete product?")){db.products=db.products.filter(p=>p.id!==pid);save();render("products")}
+ if(confirm("Delete product?")){
+  db.products=db.products.filter(p=>p.id!==pid);
+  save();
+  render("products");
+ }
 }
+
 function orders(){
  return `<div class="panel"><button onclick="orderForm()">+ Create / Send Order</button><h3>Order Management</h3>
  ${db.orders.length?table(["Order","Customer","Product","Qty","Total","Status","Actions"],db.orders.map(o=>[
@@ -203,25 +270,30 @@ function orders(){
  `<div class="actions"><button class="green" onclick="orderStatus('${o.id}','Sent')">Send</button><button class="red" onclick="orderStatus('${o.id}','Rejected')">Reject</button><button class="gray" onclick="orderStatus('${o.id}','Processing')">Processing</button></div>`
  ])):'<div class="empty">No orders yet.</div>'}</div>`;
 }
+
 function orderForm(){
  openModal("Create Order",`<form id="of">
  <label>Customer name</label><input name="customer" required>
  <label>Product</label><select name="product" required>${db.products.map(p=>`<option value="${p.id}">${esc(p.name)} - ${cash(p.price)} (Stock ${p.stock})</option>`).join("")}</select>
  <label>Quantity</label><input name="qty" type="number" min="1" value="1" required>
  <button style="width:100%">Create Order</button></form>`);
+
  of.onsubmit=e=>{
-  e.preventDefault();let f=new FormData(of),p=db.products.find(x=>x.id===f.get("product")),q=+f.get("qty");
+  e.preventDefault();
+  let f=new FormData(of),p=db.products.find(x=>x.id===f.get("product")),q=+f.get("qty");
   if(!p||q>p.stock){alert("Product unavailable or stock is insufficient.");return}
   p.stock-=q;
   db.orders.push({id:id(),customer:f.get("customer"),product:p.name,qty:q,total:p.price*q,status:"Pending"});
   save();closeModal();render("orders");
  };
 }
+
 function orderStatus(oid,status){
  let o=db.orders.find(x=>x.id===oid);if(!o)return;
  if(status==="Sent"&&!confirm("Confirm that this order has actually been dispatched?"))return;
  o.status=status;save();render("orders");
 }
+
 function balance(){
  return `<div class="panel"><h3>Add Balance Record</h3>
  <p class="notice">Only record a credit after independently verifying the payment. This demo does not transfer money.</p>
@@ -231,11 +303,13 @@ function balance(){
  <button>Add Balance Record</button></form></div>
  <div class="panel"><h3>Balance Records</h3>${transactionTable()}</div>`;
 }
+
 function transactionTable(){
  return db.transactions.length?table(["Customer","Amount","Type","Reference"],db.transactions.map(t=>[
  esc(t.customer),cash(t.amount),esc(t.type),esc(t.note)
  ])):'<div class="empty">No balance records.</div>';
 }
+
 function withdrawals(){
  return `<div class="panel"><h3>Withdrawal Requests</h3>
  <p class="notice">Approve only after checking identity, available funds and payment details. No real payout occurs here.</p>
@@ -249,11 +323,13 @@ function withdrawals(){
  <label>Payout details (masked only)</label><input name="details" placeholder="e.g. ****1234" required>
  <button>Create Request</button></form></div>`;
 }
+
 function withdrawStatus(wid,status){
  let w=db.withdrawals.find(x=>x.id===wid);if(!w)return;
  if(!confirm("Change request status to "+status+"?"))return;
  w.status=status;save();render("withdrawals");
 }
+
 function kyc(){
  return `<div class="panel"><h3>KYC Review</h3>
  <p class="notice">Demo status tracker only. Do not upload or store passports, ID photos, or sensitive identity documents in this browser-only demo.</p>
@@ -266,9 +342,11 @@ function kyc(){
  <label>Secure provider reference (not document number)</label><input name="reference" required>
  <button>Add for Review</button></form></div>`;
 }
+
 function kycStatus(kid,status){
  let k=db.kyc.find(x=>x.id===kid);if(k){k.status=status;save();render("kyc")}
 }
+
 function support(){
  return `<div class="panel"><h3>Customer Service Tickets</h3>
  ${db.tickets.length?table(["Customer","Message","Status","Reply / Action"],db.tickets.map(t=>[
@@ -280,18 +358,22 @@ function support(){
  <label>Message</label><textarea name="message" required></textarea>
  <button>Create Ticket</button></form></div>`;
 }
+
 function replyTicket(tid){
  let t=db.tickets.find(x=>x.id===tid);if(!t)return;
  openModal("Reply to Customer",`<p>${esc(t.message)}</p>
  <textarea id="replyText" placeholder="Write reply">${esc(t.reply||"")}</textarea>
  <button onclick="saveReply('${tid}')">Save Reply</button>`);
 }
+
 function saveReply(tid){
  let t=db.tickets.find(x=>x.id===tid);t.reply=replyText.value;save();closeModal();render("support");
 }
+
 function ticketStatus(tid){
  let t=db.tickets.find(x=>x.id===tid);t.status=t.status==="Closed"?"Open":"Closed";save();render("support");
 }
+
 function customers(){
  return `<div class="panel"><h3>Customer Records</h3>
  <form id="cf"><label>Name</label><input name="name" required>
@@ -299,6 +381,7 @@ function customers(){
  <button>Add Customer</button></form>
  ${db.customers.length?table(["Name","Email"],db.customers.map(c=>[esc(c.name),esc(c.email)])):'<div class="empty">No customers added.</div>'}</div>`;
 }
+
 function settings(){
  return `<div class="panel"><h3>Admin Settings</h3>
  <form id="sf"><label>Admin Email</label><input name="email" type="email" required value="${esc(db.email)}">
@@ -307,11 +390,13 @@ function settings(){
  <div class="panel"><h3>Backup</h3><button onclick="backup()">Download Data Backup</button></div>
  <div class="notice">This demo stores records in this browser only. It is not a secure production financial or KYC system.</div>`;
 }
+
 function table(head,rows){
  return `<div class="tablewrap"><table><thead><tr>${head.map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>
  ${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}
  </tbody></table></div>`;
 }
+
 document.addEventListener("submit",e=>{
  if(e.target.id==="bf"){
   e.preventDefault();let f=new FormData(e.target);
@@ -344,11 +429,13 @@ document.addEventListener("submit",e=>{
   save();alert("Settings saved");render("settings");
  }
 });
+
 function backup(){
  let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});
  let a=document.createElement("a");a.href=URL.createObjectURL(blob);
  a.download="smart-seller-backup.json";a.click();URL.revokeObjectURL(a.href);
 }
+
 if(sessionStorage.getItem(AUTH)==="yes")showApp();
 </script>
 </body>
