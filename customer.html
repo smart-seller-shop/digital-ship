@@ -4,300 +4,386 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Smart Seller - Customer</title>
+<title>Smart Seller Customer</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#f3f5fa;color:#202b40}
-button,input,textarea,select{font:inherit}
-button{background:#5267ed;color:white;border:0;padding:11px 15px;border-radius:7px;cursor:pointer}
-input,textarea,select{width:100%;padding:11px;margin:7px 0 14px;border:1px solid #d8deea;border-radius:7px}
+body{margin:0;background:#f3f5fa;color:#202b40;font-family:Arial,sans-serif}
+button,input{font:inherit}
+button{border:0;border-radius:7px;padding:11px 15px;background:#5267ed;color:#fff;cursor:pointer}
+input{width:100%;padding:11px;margin:7px 0 14px;border:1px solid #d8deea;border-radius:7px}
 label{font-size:13px;font-weight:bold}
 .hidden{display:none!important}
-#auth{max-width:420px;margin:45px auto;background:white;padding:25px;border-radius:13px;box-shadow:0 4px 20px #0001}
-#auth h2{color:#5267ed}
-.tabs{display:flex;gap:8px;margin:15px 0}
-.tabs button{flex:1;background:#e9edff;color:#3549b5}
-.tabs button.active{background:#5267ed;color:white}
-.layout{display:flex;min-height:100vh}
-aside{width:225px;background:#18243b;color:white;padding:18px;flex-shrink:0}
-.brand{font-size:23px;font-weight:bold;margin:10px 5px 25px}
-.brand span{color:#8ca2ff}
-nav button{display:block;width:100%;text-align:left;background:transparent;color:#e0e6f4;margin:4px 0}
-nav button.active,nav button:hover{background:#35496e}
-main{flex:1;min-width:0}
-header{padding:18px 24px;background:white;display:flex;justify-content:space-between;align-items:center}
-.content{padding:22px;max-width:1250px;margin:auto}
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:20px}
-.card,.panel,.product{background:white;border-radius:10px;padding:18px;margin-bottom:16px;box-shadow:0 2px 9px #00000008}
-.card small{color:#778398}.card h2{margin-bottom:0}
-.products{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
-.product h3{margin:5px 0}
-.product .price{font-weight:bold;color:#5267ed;font-size:20px}
-table{width:100%;border-collapse:collapse;min-width:580px}
+.wrap{max-width:1100px;margin:auto;padding:22px}
+.panel,.product{background:#fff;border-radius:12px;padding:18px;margin-bottom:16px;box-shadow:0 2px 9px #00000008}
+h1{margin:0;color:#5267ed}
+.muted{color:#778398;font-size:13px}
+#auth{max-width:400px;margin:55px auto;background:white;padding:25px;border-radius:13px;box-shadow:0 4px 20px #0001}
+.tabs{display:flex;gap:8px;margin:18px 0}
+.tabs button{flex:1}
+.gray{background:#77849a}
+.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:15px}
+.product img{width:100%;height:155px;object-fit:cover;border-radius:8px;background:#eef1f6}
+.product h3{margin:12px 0 6px}
+.price{font-size:20px;font-weight:bold;color:#5267ed}
+.product input{margin:10px 0}
+.product button{width:100%}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;min-width:600px}
 th,td{text-align:left;padding:11px;border-bottom:1px solid #eee;font-size:13px}
 th{background:#f7f8fc}
 .tablewrap{overflow-x:auto}
 .badge{background:#edf0ff;color:#4357c9;padding:5px 8px;border-radius:15px}
-.notice{background:#fff5d9;color:#76591a;padding:12px;border-radius:7px;font-size:13px}
 .empty{text-align:center;padding:25px;color:#8791a2}
-.row{display:flex;gap:10px}.row>*{flex:1}
-.red{background:#df4b58}
-@media(max-width:750px){
- .layout{display:block}aside{width:100%;padding:12px}
- .brand{margin:5px 8px 12px}
- nav{display:flex;overflow-x:auto;gap:4px}
- nav button{white-space:nowrap;width:auto}
- .cards{grid-template-columns:1fr 1fr}
- .products{grid-template-columns:1fr 1fr}
- .content{padding:12px}header{padding:14px}
+.notice{background:#fff5d9;color:#76591a;padding:12px;border-radius:7px;font-size:13px}
+@media(max-width:600px){
+ .wrap{padding:12px}
+ .top{align-items:flex-start;flex-direction:column}
 }
-@media(max-width:430px){.products{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <div id="auth">
-<h2>Smart Seller.</h2>
-<p>Customer Account</p>
-<div class="tabs">
-<button id="loginTab" class="active" onclick="showAuth('login')">Login</button>
-<button id="registerTab" onclick="showAuth('register')">Register</button>
-</div>
-<form id="loginForm">
-<label>Email</label><input id="loginEmail" type="email" required>
-<label>Password</label><input id="loginPassword" type="password" required>
-<button style="width:100%">Login</button>
-</form>
-<form id="registerForm" class="hidden">
-<label>Full Name</label><input id="regName" required>
-<label>Email</label><input id="regEmail" type="email" required>
-<label>Phone</label><input id="regPhone">
-<label>Password</label><input id="regPassword" type="password" minlength="6" required>
-<button style="width:100%">Create Account</button>
-</form>
-<p id="authMessage"></p>
+ <h1>Smart Seller.</h1>
+ <h3 id="authTitle">Customer Login</h3>
+
+ <div class="tabs">
+  <button type="button" id="loginTab">Login</button>
+  <button type="button" class="gray" id="registerTab">Register</button>
+ </div>
+
+ <form id="authForm">
+  <div id="nameField" class="hidden">
+   <label>Your name</label>
+   <input id="customerName" autocomplete="name">
+  </div>
+
+  <label>Email</label>
+  <input id="customerEmail" type="email" required autocomplete="email">
+
+  <label>Password</label>
+  <input id="customerPassword" type="password" required minlength="6">
+
+  <button id="authSubmit" style="width:100%">Login</button>
+  <p id="authError" style="color:#df4b58"></p>
+ </form>
+
+ <p class="muted">Demo account data is stored in this browser only. Do not use a real password.</p>
 </div>
 
-<div id="app" class="layout hidden">
-<aside>
-<div class="brand">Smart <span>Seller.</span></div>
-<nav>
-<button class="active" data-page="dashboard">Dashboard</button>
-<button data-page="shop">Shop Products</button>
-<button data-page="orders">My Orders</button>
-<button data-page="wallet">My Wallet</button>
-<button data-page="withdraw">Withdraw</button>
-<button data-page="kyc">KYC Verification</button>
-<button data-page="support">Customer Service</button>
-<button data-page="profile">My Profile</button>
-<button id="logout">Logout</button>
-</nav>
-</aside>
-<main>
-<header><strong id="heading">Dashboard</strong><span id="customerName"></span></header>
-<div class="content" id="content"></div>
-</main>
+<div id="store" class="hidden">
+ <div class="wrap">
+
+  <div class="top">
+   <div>
+    <h1>Smart Seller.</h1>
+    <p class="muted" id="welcome"></p>
+   </div>
+   <button class="gray" id="logout">Logout</button>
+  </div>
+
+  <div class="panel notice">
+   Products added by the admin will appear below.
+   Orders you place will appear in the Admin Panel under Orders.
+  </div>
+
+  <div class="panel">
+   <h2>Products</h2>
+   <div id="productList" class="products"></div>
+  </div>
+
+  <div class="panel">
+   <h2>My Orders</h2>
+   <div id="myOrders"></div>
+  </div>
+
+ </div>
 </div>
 
 <script>
-const DB="smartSellerFullAdminV3";
-const USERS="smartSellerCustomerAccountsV1";
-let db=JSON.parse(localStorage.getItem(DB)||"null")||{
- products:[],orders:[],customers:[],transactions:[],
- withdrawals:[],kyc:[],tickets:[]
-};
-db.products ||= [];db.orders ||= [];db.customers ||= [];
-db.transactions ||= [];db.withdrawals ||= [];
-db.kyc ||= [];db.tickets ||= [];
-let users=JSON.parse(localStorage.getItem(USERS)||"[]");
-let current=null;
-let cart=[];
+const DB_KEY="smartSellerFullAdminV3";
+const ACCOUNT_KEY="smartSellerCustomerAccountsV1";
 
-function saveDB(){localStorage.setItem(DB,JSON.stringify(db))}
-function saveUsers(){localStorage.setItem(USERS,JSON.stringify(users))}
-function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function money(n){return "$"+Number(n||0).toFixed(2)}
-function showAuth(which){
- loginForm.classList.toggle("hidden",which!=="login");
- registerForm.classList.toggle("hidden",which!=="register");
- loginTab.classList.toggle("active",which==="login");
- registerTab.classList.toggle("active",which==="register");
- authMessage.textContent="";
+let currentCustomer=null;
+let registerMode=false;
+
+function readDB(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(DB_KEY)||"null");
+  const data=saved&&typeof saved==="object"?saved:{};
+
+  return {
+   ...data,
+   products:Array.isArray(data.products)?data.products:[],
+   orders:Array.isArray(data.orders)?data.orders:[],
+   customers:Array.isArray(data.customers)?data.customers:[],
+   transactions:Array.isArray(data.transactions)?data.transactions:[],
+   withdrawals:Array.isArray(data.withdrawals)?data.withdrawals:[],
+   kyc:Array.isArray(data.kyc)?data.kyc:[],
+   tickets:Array.isArray(data.tickets)?data.tickets:[]
+  };
+ }catch(e){
+  return {
+   products:[],orders:[],customers:[],
+   transactions:[],withdrawals:[],kyc:[],tickets:[]
+  };
+ }
 }
-function enter(user){
- current=user;sessionStorage.setItem("smartSellerCustomer",user.id);
- auth.classList.add("hidden");app.classList.remove("hidden");
- customerName.textContent=user.name;render("dashboard");
+
+function saveDB(data){
+ localStorage.setItem(DB_KEY,JSON.stringify(data));
 }
-loginForm.onsubmit=e=>{
+
+function readAccounts(){
+ try{
+  const a=JSON.parse(localStorage.getItem(ACCOUNT_KEY)||"[]");
+  return Array.isArray(a)?a:[];
+ }catch(e){return []}
+}
+
+function saveAccounts(a){
+ localStorage.setItem(ACCOUNT_KEY,JSON.stringify(a));
+}
+
+function esc(s){
+ return String(s??"").replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
+}
+
+function money(n){
+ return "$"+Number(n||0).toFixed(2);
+}
+
+function makeId(){
+ return Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+}
+
+function setMode(register){
+ registerMode=register;
+
+ document.getElementById("authTitle").textContent=
+  register?"Create Customer Account":"Customer Login";
+
+ document.getElementById("authSubmit").textContent=
+  register?"Create Account":"Login";
+
+ document.getElementById("nameField").classList.toggle("hidden",!register);
+ document.getElementById("customerName").required=register;
+
+ document.getElementById("authError").textContent="";
+ document.getElementById("loginTab").className=register?"gray":"";
+ document.getElementById("registerTab").className=register?"":"gray";
+}
+
+document.getElementById("loginTab").onclick=()=>setMode(false);
+document.getElementById("registerTab").onclick=()=>setMode(true);
+
+document.getElementById("authForm").onsubmit=e=>{
  e.preventDefault();
- let u=users.find(x=>x.email.toLowerCase()===loginEmail.value.trim().toLowerCase()&&x.password===loginPassword.value);
- if(!u){authMessage.textContent="Email or password is incorrect.";return}
- enter(u);
-};
-registerForm.onsubmit=e=>{
- e.preventDefault();
- let email=regEmail.value.trim().toLowerCase();
- if(users.some(x=>x.email.toLowerCase()===email)){
-  authMessage.textContent="This email is already registered.";return;
+
+ const email=document.getElementById("customerEmail").value.trim().toLowerCase();
+ const password=document.getElementById("customerPassword").value;
+ const accounts=readAccounts();
+
+ if(registerMode){
+
+  const name=document.getElementById("customerName").value.trim();
+
+  if(!name){
+   document.getElementById("authError").textContent="Please enter your name.";
+   return;
+  }
+
+  if(accounts.some(a=>a.email.toLowerCase()===email)){
+   document.getElementById("authError").textContent="This email is already registered.";
+   return;
+  }
+
+  const account={
+   id:makeId(),
+   name:name,
+   email:email,
+   password:password
+  };
+
+  accounts.push(account);
+  saveAccounts(accounts);
+
+  const db=readDB();
+
+  if(!db.customers.some(c=>(c.email||"").toLowerCase()===email)){
+   db.customers.push({name,email});
+   saveDB(db);
+  }
+
+  currentCustomer=account;
+  showStore();
+
+ }else{
+
+  const account=accounts.find(a=>
+   a.email.toLowerCase()===email&&a.password===password
+  );
+
+  if(!account){
+   document.getElementById("authError").textContent="Email or password is incorrect.";
+   return;
+  }
+
+  currentCustomer=account;
+  showStore();
  }
- let u={id:id(),name:regName.value.trim(),email,phone:regPhone.value.trim(),password:regPassword.value};
- users.push(u);
- db.customers.push({id:u.id,name:u.name,email:u.email,phone:u.phone});
- saveUsers();saveDB();enter(u);
 };
-logout.onclick=()=>{
- sessionStorage.removeItem("smartSellerCustomer");location.reload();
+
+function showStore(){
+ document.getElementById("auth").classList.add("hidden");
+ document.getElementById("store").classList.remove("hidden");
+
+ document.getElementById("welcome").textContent=
+  "Welcome, "+currentCustomer.name+" ("+currentCustomer.email+")";
+
+ renderProducts();
+ renderOrders();
+}
+
+function renderProducts(){
+
+ const db=readDB();
+ const list=document.getElementById("productList");
+
+ const available=db.products.filter(p=>Number(p.stock)>0);
+
+ if(!available.length){
+  list.innerHTML=
+   '<div class="empty">No products are available right now. Please check again later.</div>';
+  return;
+ }
+
+ list.innerHTML=available.map(p=>`
+  <div class="product">
+
+   ${p.image?
+    `<img src="${esc(p.image)}" alt="${esc(p.name)}" onerror="this.style.display='none'">`:
+    '<div style="height:155px;background:#eef1f6;border-radius:8px;display:grid;place-items:center">Product</div>'
+   }
+
+   <h3>${esc(p.name)}</h3>
+
+   <div class="price">${money(p.price)}</div>
+
+   <p class="muted">${esc(p.description||"")}</p>
+
+   <p class="muted">Available stock: ${Number(p.stock)||0}</p>
+
+   <label>Quantity</label>
+   <input type="number" id="qty-${esc(p.id)}"
+    min="1" max="${Number(p.stock)||0}" value="1">
+
+   <button onclick="placeOrder('${esc(p.id)}')">Place Order</button>
+
+  </div>
+ `).join("");
+}
+
+function placeOrder(productId){
+
+ const db=readDB();
+
+ const product=db.products.find(p=>String(p.id)===String(productId));
+
+ if(!product){
+  alert("This product is no longer available.");
+  renderProducts();
+  return;
+ }
+
+ const qtyInput=document.getElementById("qty-"+productId);
+ const qty=Number(qtyInput?.value||1);
+
+ if(!Number.isInteger(qty)||qty<1){
+  alert("Please enter a valid quantity.");
+  return;
+ }
+
+ if(qty>Number(product.stock)){
+  alert("Not enough stock available.");
+  renderProducts();
+  return;
+ }
+
+ product.stock=Number(product.stock)-qty;
+
+ const order={
+  id:makeId(),
+  customer:currentCustomer.email,
+  product:product.name,
+  qty:qty,
+  total:Number(product.price)*qty,
+  status:"Pending",
+  date:new Date().toLocaleString()
+ };
+
+ db.orders.push(order);
+
+ saveDB(db);
+
+ alert("Your order has been sent to the admin.");
+
+ renderProducts();
+ renderOrders();
+}
+
+function renderOrders(){
+
+ const db=readDB();
+
+ const orders=db.orders.filter(o=>
+  (o.customer||"").toLowerCase()===currentCustomer.email.toLowerCase()
+ ).slice().reverse();
+
+ const target=document.getElementById("myOrders");
+
+ if(!orders.length){
+  target.innerHTML='<div class="empty">You have not placed any orders yet.</div>';
+  return;
+ }
+
+ target.innerHTML=
+  '<div class="tablewrap"><table><thead><tr>'+
+  '<th>Order ID</th><th>Product</th><th>Quantity</th><th>Total</th><th>Status</th>'+
+  '</tr></thead><tbody>'+
+  orders.map(o=>`
+   <tr>
+    <td>${esc(o.id)}</td>
+    <td>${esc(o.product)}</td>
+    <td>${Number(o.qty)||0}</td>
+    <td>${money(o.total)}</td>
+    <td><span class="badge">${esc(o.status||"Pending")}</span></td>
+   </tr>
+  `).join("")+
+  '</tbody></table></div>';
+}
+
+document.getElementById("logout").onclick=()=>{
+ currentCustomer=null;
+
+ document.getElementById("store").classList.add("hidden");
+ document.getElementById("auth").classList.remove("hidden");
+ document.getElementById("customerPassword").value="";
+
+ setMode(false);
 };
-document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
- document.querySelectorAll("[data-page]").forEach(x=>x.classList.remove("active"));
- b.classList.add("active");render(b.dataset.page);
+
+/* Refresh products and order status when customer returns to this tab. */
+document.addEventListener("visibilitychange",()=>{
+ if(!document.hidden&&currentCustomer){
+  renderProducts();
+  renderOrders();
+ }
 });
-function walletBalance(){
- let credits=db.transactions.filter(t=>t.customer.toLowerCase()===current.email.toLowerCase()&&t.type==="Credit").reduce((s,t)=>s+Number(t.amount),0);
- let spent=db.orders.filter(o=>o.customer.toLowerCase()===current.email.toLowerCase()&&o.status!=="Rejected"&&o.status!=="Cancelled").reduce((s,o)=>s+Number(o.total),0);
- let paid=db.withdrawals.filter(w=>w.customer.toLowerCase()===current.email.toLowerCase()&&w.status==="Approved").reduce((s,w)=>s+Number(w.amount),0);
- return credits-spent-paid;
-}
-function render(page){
- heading.textContent=page[0].toUpperCase()+page.slice(1);
- let html="";
- if(page==="dashboard")html=dashboard();
- if(page==="shop")html=shop();
- if(page==="orders")html=orders();
- if(page==="wallet")html=wallet();
- if(page==="withdraw")html=withdraw();
- if(page==="kyc")html=kyc();
- if(page==="support")html=support();
- if(page==="profile")html=profile();
- content.innerHTML=html;
-}
-function dashboard(){
- let mine=db.orders.filter(o=>o.customer.toLowerCase()===current.email.toLowerCase());
- return `<div class="cards">
- <div class="card"><small>Wallet Balance</small><h2>${money(walletBalance())}</h2></div>
- <div class="card"><small>My Orders</small><h2>${mine.length}</h2></div>
- <div class="card"><small>Products Available</small><h2>${db.products.length}</h2></div>
- </div>
- <div class="panel"><h3>Welcome, ${esc(current.name)}!</h3>
- <p>Welcome to your Smart Seller customer account.</p>
- <button onclick="render('shop')">Shop Products</button>
- </div>
- <div class="notice">Demo account: information is saved in this browser only. Real payments and account security require a secure server.</div>`;
-}
-function shop(){
- return `<div class="panel"><h3>Available Products</h3>
- ${db.products.length?`<div class="products">${db.products.map(p=>`
- <div class="product"><h3>${esc(p.name)}</h3>
- <p>${esc(p.description||"")}</p>
- <p class="price">${money(p.price)}</p>
- <small>Stock: ${p.stock}</small>
- <button style="width:100%;margin-top:12px" onclick="buy('${p.id}')">Order Now</button>
- </div>`).join("")}</div>`:'<div class="empty">No products available yet.</div>'}</div>`;
-}
-function buy(pid){
- let p=db.products.find(x=>x.id===pid);
- if(!p||p.stock<1){alert("This product is out of stock.");return}
- if(walletBalance()<p.price){alert("Insufficient wallet balance. Please submit a balance request.");render("wallet");return}
- if(!confirm("Place order for "+p.name+" at "+money(p.price)+"?"))return;
- p.stock--;
- db.orders.push({id:id(),customer:current.email,product:p.name,qty:1,total:p.price,status:"Pending"});
- saveDB();alert("Your order has been placed.");render("orders");
-}
-function orders(){
- let mine=db.orders.filter(o=>o.customer.toLowerCase()===current.email.toLowerCase());
- return `<div class="panel"><h3>My Orders</h3>
- ${mine.length?table(["Order ID","Product","Qty","Total","Status"],mine.map(o=>[
- esc(o.id),esc(o.product),o.qty,money(o.total),`<span class="badge">${esc(o.status)}</span>`
- ])):'<div class="empty">You have not placed any orders.</div>'}</div>`;
-}
-function wallet(){
- let mine=db.transactions.filter(t=>t.customer.toLowerCase()===current.email.toLowerCase());
- return `<div class="cards"><div class="card"><small>Available Balance</small><h2>${money(walletBalance())}</h2></div></div>
- <div class="panel"><h3>Request Balance Addition</h3>
- <div class="notice">Submit a request for admin review. This does not add real money to your wallet.</div>
- <form id="topupForm"><label>Amount</label><input name="amount" type="number" min="1" step=".01" required>
- <label>Payment Reference</label><input name="note" required placeholder="Transaction reference">
- <button>Submit Balance Request</button></form></div>
- <div class="panel"><h3>Wallet Records</h3>
- ${mine.length?table(["Amount","Type","Reference"],mine.map(t=>[money(t.amount),esc(t.type),esc(t.note)])):'<div class="empty">No wallet records.</div>'}</div>`;
-}
-function withdraw(){
- return `<div class="panel"><h3>Withdraw Funds</h3>
- <p>Available balance: <b>${money(walletBalance())}</b></p>
- <div class="notice">Your withdrawal request will be reviewed by the admin. This demo does not transfer money.</div>
- <form id="withdrawForm"><label>Amount</label><input name="amount" type="number" min=".01" step=".01" required>
- <label>Payment details (use masked details only)</label><input name="details" required placeholder="e.g. ****1234">
- <button>Submit Withdrawal Request</button></form></div>
- <div class="panel"><h3>My Withdrawal Requests</h3>
- ${myRows(db.withdrawals).length?table(["Amount","Details","Status"],myRows(db.withdrawals).map(w=>[money(w.amount),esc(w.details),esc(w.status)])):'<div class="empty">No requests.</div>'}</div>`;
-}
-function kyc(){
- let mine=db.kyc.filter(k=>k.customer.toLowerCase()===current.email.toLowerCase());
- return `<div class="panel"><h3>KYC Verification</h3>
- <div class="notice">Do not upload passport or ID images to this demo. Submit only a secure verification provider reference. Real KYC requires a protected verification service.</div>
- <form id="kycForm"><label>Verification reference</label><input name="reference" required placeholder="Reference from verification provider">
- <button>Submit KYC Request</button></form>
- <h3>My KYC Status</h3>
- ${mine.length?table(["Reference","Status"],mine.map(k=>[esc(k.reference),esc(k.status)])):'<div class="empty">No KYC request yet.</div>'}</div>`;
-}
-function support(){
- let mine=db.tickets.filter(t=>t.customer.toLowerCase()===current.email.toLowerCase());
- return `<div class="panel"><h3>Customer Service</h3>
- <form id="ticketForm"><label>Subject / Message</label><textarea name="message" required placeholder="How can we help?"></textarea>
- <button>Send Message</button></form></div>
- <div class="panel"><h3>My Support Tickets</h3>
- ${mine.length?table(["Message","Admin Reply","Status"],mine.map(t=>[esc(t.message),esc(t.reply||"Waiting for reply"),esc(t.status)])):'<div class="empty">No support messages.</div>'}</div>`;
-}
-function profile(){
- return `<div class="panel"><h3>My Profile</h3>
- <form id="profileForm"><label>Full Name</label><input name="name" required value="${esc(current.name)}">
- <label>Email</label><input value="${esc(current.email)}" disabled>
- <label>Phone</label><input name="phone" value="${esc(current.phone||"")}">
- <button>Save Profile</button></form></div>`;
-}
-function myRows(arr){return arr.filter(x=>x.customer.toLowerCase()===current.email.toLowerCase())}
-function table(head,rows){
- return `<div class="tablewrap"><table><thead><tr>${head.map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>
- ${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
-}
-document.addEventListener("submit",e=>{
- if(e.target.id==="topupForm"){
-  e.preventDefault();let f=new FormData(e.target);
-  db.transactions.push({id:id(),customer:current.email,amount:+f.get("amount"),type:"Top-up Request",note:f.get("note")});
-  saveDB();alert("Balance request submitted for admin review.");render("wallet");
- }
- if(e.target.id==="withdrawForm"){
-  e.preventDefault();let f=new FormData(e.target),amount=+f.get("amount");
-  if(amount>walletBalance()){alert("Amount is higher than your available balance.");return}
-  db.withdrawals.push({id:id(),customer:current.email,amount,details:f.get("details"),status:"Pending"});
-  saveDB();alert("Withdrawal request submitted.");render("withdraw");
- }
- if(e.target.id==="kycForm"){
-  e.preventDefault();let f=new FormData(e.target);
-  db.kyc.push({id:id(),customer:current.email,reference:f.get("reference"),status:"Pending"});
-  saveDB();alert("KYC request submitted.");render("kyc");
- }
- if(e.target.id==="ticketForm"){
-  e.preventDefault();let f=new FormData(e.target);
-  db.tickets.push({id:id(),customer:current.email,message:f.get("message"),status:"Open",reply:""});
-  saveDB();alert("Message sent.");render("support");
- }
- if(e.target.id==="profileForm"){
-  e.preventDefault();let f=new FormData(e.target);
-  current.name=f.get("name");current.phone=f.get("phone");
-  users=users.map(u=>u.id===current.id?current:u);
-  db.customers=db.customers.map(c=>c.id===current.id?{...c,name:current.name,phone:current.phone}:c);
-  saveUsers();saveDB();customerName.textContent=current.name;
-  alert("Profile updated.");render("profile");
- }
-});
-let savedId=sessionStorage.getItem("smartSellerCustomer");
-if(savedId){
- let u=users.find(x=>x.id===savedId);
- if(u)enter(u);
-}
+
+setMode(false);
 </script>
 </body>
 </html>
