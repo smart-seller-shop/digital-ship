@@ -1,12 +1,66 @@
-console.log("Supabase connected:", !!supabaseClient);
-supabaseClient
-    .from("products")
-    .select("*")
-    .then(({ data, error }) => {
-        if (error) {
-            console.error("Products error:", error.message);
-        } else {
-            console.log("Products loaded:", data);
-        }
-    }); 
- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smart Seller</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f5fa;color:#202b40;font:15px Arial}button,input,select,textarea{font:inherit}button{border:0;border-radius:8px;padding:10px 14px;background:#5267ed;color:white;cursor:pointer}button.gray{background:#e9edff;color:#3549bd}button.red{background:#d9485a}button.green{background:#159c70}button:disabled{opacity:.5}input,select,textarea{width:100%;padding:11px;border:1px solid #d8deea;border-radius:8px;margin:6px 0 13px;background:white}label{font-size:13px;font-weight:bold}.hidden{display:none!important}#auth{max-width:420px;margin:7vh auto;background:white;padding:26px;border-radius:15px;box-shadow:0 5px 25px #0001}#auth h1{color:#5267ed}.layout{display:flex;min-height:100vh}aside{width:225px;background:#18243b;color:white;padding:18px;flex-shrink:0}.brand{font-size:23px;font-weight:bold;margin:8px 4px 24px}.brand span{color:#9eafff}nav button{display:block;width:100%;text-align:left;background:transparent;color:#e0e6f4;margin:4px 0}nav button.active,nav button:hover{background:#35496e}main{flex:1;min-width:0}header{background:white;padding:17px 22px;display:flex;justify-content:space-between;align-items:center}.content{padding:22px;max-width:1300px;margin:auto}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px}.card,.panel,.product{background:white;border-radius:11px;padding:17px;margin-bottom:16px;box-shadow:0 2px 10px #00000008}.card small,.muted{color:#778398}.card h2{margin:8px 0 0}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}.product{padding:0;overflow:hidden}.product img{width:100%;height:155px;object-fit:cover;background:#edf0f7}.pad{padding:13px}.price{font-size:20px;font-weight:bold;color:#3549bd}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:650px}th,td{text-align:left;padding:11px;border-bottom:1px solid #edf0f5;font-size:13px}th{background:#f7f8fc}.row{display:flex;gap:10px}.row>*{flex:1}.notice{background:#fff5d9;color:#76591a;padding:12px;border-radius:8px}.empty{text-align:center;padding:24px;color:#8791a2}.status{background:#edf0ff;color:#4357c9;padding:5px 8px;border-radius:20px;font-size:12px}.actions{display:flex;gap:5px;flex-wrap:wrap}.actions button{padding:7px 9px;font-size:12px}#message{font-size:13px;margin-top:10px;color:#b42336}
+@media(max-width:760px){.layout{display:block}aside{width:100%;padding:12px}.brand{margin:5px 8px 12px}nav{display:flex;overflow:auto;gap:4px}nav button{white-space:nowrap;width:auto}.cards{grid-template-columns:1fr 1fr}.content{padding:12px}.row{display:block}header{padding:14px}}
+</style>
+</head>
+<body>
+<section id="auth">
+<h1>Smart Seller.</h1><p class="muted">Customer and admin login</p>
+<div class="row"><button class="gray" id="loginTab">Login</button><button class="gray" id="signupTab">Create account</button></div>
+<form id="authForm"><label>Email</label><input id="email" type="email" required placeholder="Email address"><label>Password</label><input id="password" type="password" minlength="6" required placeholder="At least 6 characters"><button id="authButton" style="width:100%">Login</button></form>
+<div id="message"></div><p class="muted">Admin rights are assigned in Supabase, never by a public signup form.</p>
+</section>
+<div id="app" class="layout hidden">
+<aside><div class="brand">Smart <span>Seller.</span></div><nav id="nav"></nav></aside>
+<main><header><b id="heading">Shop</b><div><span id="userEmail" class="muted"></span> <button id="logout" class="gray">Logout</button></div></header><div id="content" class="content"></div></main>
+</div>
+<script>
+/* Paste your existing Supabase publishable key between the quotes below. Never use service_role here. */
+const SUPABASE_URL="https://cgrwiwzqiusvjibpjzdv.supabase.co";
+const SUPABASE_KEY="sb_publishable_du1gsmfC1UqGUpc40-uHiQ_P-2T8wnV";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let user=null,admin=false,mode="login",page="";
+const el=id=>document.getElementById(id), cash=n=>"$"+Number(n||0).toFixed(2);
+const safe=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function msg(t){el("message").textContent=t}
+el("loginTab").onclick=()=>{mode="login";el("authButton").textContent="Login";msg("")};
+el("signupTab").onclick=()=>{mode="signup";el("authButton").textContent="Create account";msg("")};
+el("authForm").onsubmit=async e=>{e.preventDefault();msg("Please wait…");let email=el("email").value.trim(),password=el("password").value;
+let r=mode==="login"?await db.auth.signInWithPassword({email,password}):await db.auth.signUp({email,password});
+if(r.error){msg(r.error.message);return}if(mode==="signup"&&!r.data.session){msg("Account created. Check your email to confirm, then log in.");return}await start(r.data.user)};
+el("logout").onclick=async()=>{await db.auth.signOut();location.reload()};
+async function start(u){user=u;let a=await db.from("admin_users").select("user_id").eq("user_id",u.id).maybeSingle();admin=!!a.data;
+el("auth").classList.add("hidden");el("app").classList.remove("hidden");el("userEmail").textContent=u.email||"";
+let links=admin?[["dashboard","Dashboard"],["products","Products"],["selections","Customer Lists"],["orders","Orders"],["balances","Applied Balances"]]:[["shop","Shop"],["myorders","My Orders"],["mybalance","My Balance"]];
+el("nav").innerHTML=links.map(x=>`<button data-page="${x[0]}">${x[1]}</button>`).join("");
+el("nav").querySelectorAll("button").forEach(b=>b.onclick=()=>go(b.dataset.page));await go(admin?"dashboard":"shop")}
+async function go(p){page=p;el("heading").textContent=p==="shop"?"Shop":p.replace(/([A-Z])/g," $1").replace(/^./,s=>s.toUpperCase());
+el("nav").querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.page===p));el("content").innerHTML='<div class="panel">Loading…</div>';
+try{let h=p==="shop"?await shop():p==="myorders"?await myorders():p==="mybalance"?await mybalance():p==="dashboard"?await dashboard():p==="products"?await products():p==="selections"?await selections():p==="orders"?await orders():await balances();el("content").innerHTML=h;wire()}catch(e){el("content").innerHTML=`<div class="panel notice">Problem: ${safe(e.message||e)}<p>Check that the SQL setup was run in Supabase.</p></div>`}}
+function table(head,rows){return rows.length?`<div class="tablewrap"><table><thead><tr>${head.map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`:'<div class="empty">No records yet.</div>'}
+async function shop(){let r=await db.from("products").select("*").order("name");if(r.error)throw r.error;return `<h2>Products</h2><div class="grid">${(r.data||[]).map(p=>`<article class="product">${p.image?`<img src="${safe(p.image)}" onerror="this.style.display='none'">`:'<div style="height:155px;background:#edf0f7"></div>'}<div class="pad"><b>${safe(p.name)}</b><p class="muted">${safe(p.category||"")}</p><div class="price">${cash(p.price)}</div><p>${safe(p.description||"")}</p><label>Quantity</label><input id="q-${safe(p.id)}" type="number" min="1" value="1"><button data-select="${safe(p.id)}">Add to my list</button></div></article>`).join("")||'<div class="panel empty">No products yet.</div>'}</div>`}
+async function myorders(){let r=await db.from("shop_orders").select("*").eq("customer_id",user.id).order("created_at",{ascending:false});if(r.error)throw r.error;return `<div class="panel"><h2>My Orders</h2>${table(["Product","Qty","Total","Status","Payment"],r.data.map(o=>[safe(o.product_name),o.quantity,cash(o.total),`<span class="status">${safe(o.status)}</span>`,`<span class="status">${safe(o.payment_status)}</span>`]))}</div>`}
+async function mybalance(){let r=await db.from("customer_wallets").select("applied_balance").eq("customer_id",user.id).maybeSingle();if(r.error)throw r.error;let t=await db.from("balance_transactions").select("*").eq("customer_id",user.id).order("created_at",{ascending:false});if(t.error)throw t.error;return `<div class="panel"><small>Applied Balance</small><h1>${cash(r.data?.applied_balance)}</h1><p class="notice">Admin updates this after checking cash received.</p></div><div class="panel"><h3>Balance history</h3>${table(["Amount","Note","Date"],t.data.map(x=>[cash(x.amount),safe(x.note),new Date(x.created_at).toLocaleString()]))}</div>`}
+async function dashboard(){let p=await db.from("products").select("id",{count:"exact",head:true}),o=await db.from("shop_orders").select("id",{count:"exact",head:true}),s=await db.from("product_selections").select("id",{count:"exact",head:true});if(p.error)throw p.error;if(o.error)throw o.error;if(s.error)throw s.error;return `<div class="cards"><div class="card"><small>Products</small><h2>${p.count||0}</h2></div><div class="card"><small>Orders</small><h2>${o.count||0}</h2></div><div class="card"><small>Customer selections</small><h2>${s.count||0}</h2></div><div class="card"><small>Role</small><h2>Admin</h2></div></div><div class="panel">Manage products, review customer lists, send orders and confirm cash payments from the menu.</div>`}
+async function products(){let r=await db.from("products").select("*").order("name");if(r.error)throw r.error;return `<div class="panel"><h2>Add / Edit Product</h2><form id="productForm"><input name="id" type="hidden"><div class="row"><div><label>Name</label><input name="name" required></div><div><label>Price</label><input name="price" type="number" min="0" step=".01" required></div></div><div class="row"><div><label>Stock</label><input name="stock" type="number" min="0" value="0"></div><div><label>Category</label><input name="category"></div></div><label>Image URL</label><input name="image" type="url"><label>Description</label><textarea name="description"></textarea><button>Save product</button><button type="reset" class="gray">Clear</button></form></div><div class="panel"><h3>Product list</h3>${table(["Name","Price","Stock","Category","Actions"],r.data.map(p=>[safe(p.name),cash(p.price),p.stock??0,safe(p.category),`<div class="actions"><button class="gray" data-edit="${p.id}">Edit</button><button class="red" data-delete="${p.id}">Delete</button></div>`]))}</div>`}
+async function selections(){let r=await db.from("product_selections").select("*").order("created_at",{ascending:false});if(r.error)throw r.error;return `<div class="panel"><h2>Customer Product Lists</h2><p class="notice">Create an order from a customer's selected product. The order will appear in their account.</p>${table(["Customer ID","Product ID","Qty","Action"],r.data.map(s=>[safe(s.customer_id),safe(s.product_id),s.quantity,`<button data-makeorder="${s.id}">Create order</button>`]))}</div>`}
+async function orders(){let r=await db.from("shop_orders").select("*").order("created_at",{ascending:false});if(r.error)throw r.error;return `<div class="panel"><h2>Orders</h2>${table(["Customer","Product","Qty","Total","Status","Actions"],r.data.map(o=>[safe(o.customer_email||o.customer_id),safe(o.product_name),o.quantity,cash(o.total),safe(o.status),`<div class="actions"><button data-status="Sent" data-id="${o.id}">Send</button><button class="gray" data-status="Processing" data-id="${o.id}">Processing</button><button class="red" data-status="Rejected" data-id="${o.id}">Reject</button>${o.payment_status!=="Cash received"?`<button class="green" data-cash="${o.id}">Cash received</button>`:'Paid'}</div>`]))}</div>`}
+async function balances(){let r=await db.from("customer_wallets").select("*").order("created_at",{ascending:false});if(r.error)throw r.error;return `<div class="panel"><h2>Customer Applied Balances</h2>${table(["Customer ID","Applied Balance"],r.data.map(w=>[safe(w.customer_id),cash(w.applied_balance)]))}</div>`}
+function wire(){
+ document.querySelectorAll("[data-select]").forEach(b=>b.onclick=async()=>{let q=Number(el("q-"+b.dataset.select).value);if(!Number.isInteger(q)||q<1)return alert("Enter a valid quantity");b.disabled=true;let r=await db.rpc("customer_select_product",{p_product_id:String(b.dataset.select),p_quantity:q});b.disabled=false;if(r.error)alert(r.error.message);else alert("Product added to your list.")});
+ let f=el("productForm");if(f)f.onsubmit=async e=>{e.preventDefault();let d=new FormData(f),id=d.get("id");let v={name:d.get("name").trim(),price:Number(d.get("price")),stock:Number(d.get("stock")||0),category:d.get("category")||null,image:d.get("image")||null,description:d.get("description")||null};let r=id?await db.from("products").update(v).eq("id",id):await db.from("products").insert(v);if(r.error)alert(r.error.message);else go("products")};
+ document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=async()=>{let r=await db.from("products").select("*").eq("id",b.dataset.edit).single();if(r.error)return alert(r.error.message);Object.entries(r.data).forEach(([k,v])=>{if(f.elements[k])f.elements[k].value=v??""});window.scrollTo(0,0)});
+ document.querySelectorAll("[data-delete]").forEach(b=>b.onclick=async()=>{if(!confirm("Delete this product?"))return;let r=await db.from("products").delete().eq("id",b.dataset.delete);if(r.error)alert(r.error.message);else go("products")});
+ document.querySelectorAll("[data-makeorder]").forEach(b=>b.onclick=async()=>{let r=await db.rpc("admin_create_order_from_selection",{p_selection_id:b.dataset.makeorder});if(r.error)alert(r.error.message);else{alert("Order created. Go to Orders and press Send.");go("selections")}});
+ document.querySelectorAll("[data-status]").forEach(b=>b.onclick=async()=>{let r=await db.from("shop_orders").update({status:b.dataset.status}).eq("id",b.dataset.id);if(r.error)alert(r.error.message);else go("orders")});
+ document.querySelectorAll("[data-cash]").forEach(b=>b.onclick=async()=>{if(!confirm("Have you physically received and checked the cash?"))return;let r=await db.rpc("admin_confirm_cash_order",{p_order_id:b.dataset.cash});if(r.error)alert(r.error.message);else{alert("Applied balance credited.");go("orders")}});
+}
+(async()=>{if(SUPABASE_KEY.includes(sb_publishable_du1gsmfC1UqGUpc40-uHiQ_P-2T8wnV)){msg("First add your Supabase publishable key in the code.");return}let r=await db.auth.getSession();if(r.data.session)await start(r.data.session.user)})();
+</script>
+</body></html>
