@@ -1,11 +1,12 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = "https://cgrwiwzqiusvjibpjzdv.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://cgrwiwzqiusvjibpjzdv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_du1gsmfC1UqGUpc40-uHiQ_P-2T8wnV";
 
 const supabaseClient = window.supabase.createClient(
-    console.log("Supabase connected:", !!supabaseClient);
     SUPABASE_URL,
     SUPABASE_KEY
 );
+
+console.log("Supabase connected:", !!supabaseClient);
 </script>
